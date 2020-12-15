@@ -1,0 +1,13 @@
+<?php
+
+use \Drupal\node\Entity;
+
+function ungerboeck_mydata_converter_install() {
+  $query = \Drupal::entityQuery('node')->exists('field_ungerboeck_search_term')->exists('field_event_title_filter');
+  $nids = $query->execute();
+  $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($nids);
+  foreach ($nodes as $node) {
+    $node->field_event_title_filter->value = $node->field_ungerboeck_search_term->value;
+    $node->save();
+  }
+}
