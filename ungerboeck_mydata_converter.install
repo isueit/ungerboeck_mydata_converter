@@ -3,11 +3,15 @@
 use \Drupal\node\Entity;
 
 function ungerboeck_mydata_converter_install() {
-  $query = \Drupal::entityQuery('node')->exists('field_ungerboeck_search_term')->exists('field_event_title_filter');
+  $query = \Drupal::entityQuery('node')->exists('field_ungerboeck_search_term');
   $nids = $query->execute();
+\Drupal::logger('ungerboeck_mydata_converter')->info('nids: ' . sizeof($nids));
   $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($nids);
+\Drupal::logger('ungerboeck_mydata_converter')->info('nodes: ' . sizeof($nodes));
   foreach ($nodes as $node) {
-    $node->field_event_title_filter->value = $node->field_ungerboeck_search_term->value;
-    $node->save();
+    if ($node->hasField('field_event_title_filter')) {
+      $node->field_event_title_filter->value = $node->field_ungerboeck_search_term->value;
+      $node->save();
+    }
   }
 }
