@@ -3,11 +3,18 @@
 use \Drupal\node\Entity;
 
 function ungerboeck_mydata_converter_install() {
-  $query = \Drupal::entityQuery('node')->exists('field_ungerboeck_search_term')->exists('field_event_title_filter');
-  $nids = $query->execute();
-  $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($nids);
+  $query = \Drupal::entityQuery('node')->exists('field_ungerboeck_search_term')->notExists('field_event_title_filter');
+  $nids_null = $query->execute();
+  $nids_filled = [];
+  //Uncomment to update when field_event_title_filter has value, currently preserves existing value
+  // $query = \Drupal::entityQuery('node')->exists('field_ungerboeck_search_term')->exists('field_event_title_filter');
+  // $nids_filled = $query->execute();
+  $nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($nids_null+$nids_filled);
   foreach ($nodes as $node) {
-    $node->field_event_title_filter->value = $node->field_ungerboeck_search_term->value;
-    $node->save();
+    $field_map = \Drupal::service('entity_field.manager')->getFieldDefinitions('node', $node->bundle());
+    if (isset($field_map['field_event_title_filter']) && isset($field_map['field_event_title_filter'])) {
+      $node->field_event_title_filter->value = $node->field_ungerboeck_search_term->value;
+      $node->save();
+    }
   }
 }
